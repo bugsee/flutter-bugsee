@@ -7,13 +7,13 @@ PODS:
 
 DEPENDENCIES:
   - bugsee (from `Pods/.symlinks/plugins/bugsee/ios`)
-  - Flutter (from `Pods/.symlinks/flutter/ios-release`)
+  - Flutter (from `Pods/.symlinks/flutter/ios`)
 
 EXTERNAL SOURCES:
   bugsee:
     :path: Pods/.symlinks/plugins/bugsee/ios
   Flutter:
-    :path: Pods/.symlinks/flutter/ios-release
+    :path: Pods/.symlinks/flutter/ios
 
 SPEC CHECKSUMS:
   Bugsee: 17a69b0f6b785ae8802ee501167717e202b3525f

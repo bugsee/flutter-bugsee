@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'dart:convert';
+import 'package:meta/meta.dart';
 import 'package:flutter/services.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:crypto/crypto.dart';
@@ -17,7 +18,27 @@ class Bugsee {
     });
   }
 
-  static Future<Null> logException({@required dynamic exception, dynamic stackTrace}) async {
+  static Future<Null> trace({@required String name, @required dynamic value}) async {
+    await _channel.invokeMethod('trace', <String, dynamic>{
+      'name': name,
+      'value': value,
+    });
+  }
+
+  static Future<Null> setAttribute({@required String key, @required dynamic value}) async {
+    await _channel.invokeMethod('setAttribute', <String, dynamic>{
+      'key': key,
+      'value': value,
+    });
+  }
+
+  static Future<Null> clearAttribute({@required String key}) async {
+    await _channel.invokeMethod('clearAttribute', <String, dynamic>{
+      'key': key,
+    });
+  }
+
+  static Future<Null> logException({@required dynamic exception, @required bool handled, dynamic stackTrace}) async {
     final Chain chain = stackTrace is StackTrace
       ? new Chain.forTrace(stackTrace)
       : new Chain.parse(stackTrace);
@@ -43,20 +64,18 @@ class Bugsee {
   	}
   	s.close();
 
-//    await _channel.invokeMethod('logException', <String, dynamic>{
-//      'name': '${exception.runtimeType}',
-//      'reason': $exception,
-//      'traces': traces,
-//    });
+    final dynamic ex = <String, dynamic>{
+      'name': '${exception.runtimeType}',
+      'reason': '$exception',
+      'traces': traces,
+      'signature': '${ds.value}',
+    };
 
-    await _channel.invokeMethod('event', <String, dynamic>{
-      'name': 'exception',
-      'parameters': <String, dynamic>{
-        'name': '${exception.runtimeType}',
-        'exception': '$exception',
-        'traces': traces,
-        'signature': '${ds.value}'
-      },
+    await _channel.invokeMethod('logException', <String, dynamic>{
+      'name': 'FlutterManagedException',
+      'reason': '$ex',
+      'handled': handled,
+      'signature': '${ds.value}',
     });
   }
 }

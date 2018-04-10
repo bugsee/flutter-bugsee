@@ -25,7 +25,7 @@ import 'package:bugsee/bugsee.dart';
 /// workspaces rather than on users' devices in production.
 bool get isInDebugMode {
   bool inDebugMode = false;
-  assert(inDebugMode = true);
+//  assert(inDebugMode = true);
   return inDebugMode;
 }
 
@@ -44,6 +44,7 @@ Future<Null> _reportError(dynamic error, dynamic stackTrace) async {
 
   await Bugsee.logException(
     exception: error,
+    handled: false,
     stackTrace: stackTrace,
   );
 }
@@ -55,8 +56,7 @@ Future<Null> main() async {
       // In development mode simply print to console.
       FlutterError.dumpErrorToConsole(details);
     } else {
-      // In production mode report to the application zone to report to
-      // Bugsee.
+      // In production mode report to the application zone to report to Bugsee.
       Zone.current.handleUncaughtError(details.exception, details.stack);
     }
   };
@@ -129,6 +129,26 @@ class MyHomePage extends StatelessWidget {
               onPressed: () async {
                 final channel = const MethodChannel('crashy-custom-channel');
                 await channel.invokeMethod('blah');
+              },
+            ),
+            new RaisedButton(
+              child: new Text('Custom events'),
+              elevation: 1.0,
+              onPressed: () async {
+                dynamic params = <String, dynamic>{};
+                params['string'] = 'test';
+                params['int'] = 5;
+                params['float'] = 0.55;
+                params['bool'] =  true;
+                Bugsee.event(name: 'event', parameters: params);
+                Bugsee.trace(name: 'number', value: 5);
+                Bugsee.trace(name: 'float', value: 0.55);
+                Bugsee.trace(name: 'string', value: 'test');
+                Bugsee.trace(name: 'bool', value: true);
+                Bugsee.trace(name: 'map', value: params);
+                Bugsee.setAttribute(key: 'age', value: 36);
+                Bugsee.setAttribute(key: 'name', value: 'John Doe');
+                Bugsee.setAttribute(key: 'married', value: false);
               },
             ),
           ],
