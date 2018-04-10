@@ -1,4 +1,5 @@
 #import "BugseePlugin.h"
+#import "Bugsee/Bugsee.h"
 
 @implementation BugseePlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
@@ -10,9 +11,18 @@
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-  if ([@"getPlatformVersion" isEqualToString:call.method]) {
-    result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
-  } else {
+  if ([@"event" isEqualToString:call.method]) {
+    NSString *name = call.arguments[@"name"];
+    id parameterMap = call.arguments[@"parameters"];
+
+    if (parameterMap != [NSNull null]) {
+      [Bugsee registerEvent:name withParams:parameterMap];
+    } else {
+      [Bugsee registerEvent:name];
+    }
+
+    result(nil);
+ } else {
     result(FlutterMethodNotImplemented);
   }
 }
