@@ -53,18 +53,24 @@ class Bugsee {
 
     	  dynamic uri = frame.uri;
     	  dynamic user = true;
+    	  dynamic package = frame.package;
 
         if (frame.uri.scheme != 'dart' && frame.uri.scheme != 'package')
           uri = frame.uri.pathSegments.last;
 
         if (frame.uri.scheme == 'hooks' ||
-            frame.uri.scheme != 'dart' ||
+            frame.uri.scheme == 'dart' ||
             frame.package == 'flutter')
           user = false;
 
+        if (package == null) {
+          if (frame.uri.scheme == 'dart') package = 'dart';
+          else package = 'application';
+        }
+
     		frames.add(<String, dynamic>{
-			    'trace': '${frame.member} ($uri:${frame.line}:${frame.column})',
-          'module': frame.package,
+			    'trace': '${frame.member} ($uri:${frame.line})',
+          'module': '$package',
 			    'user': user
 			  });
 
@@ -74,7 +80,7 @@ class Bugsee {
       if (t < chain.traces.length - 1) {
     	  frames.add(<String, dynamic>{
           'trace': '<asyncronous gap>',
-          'module': 'async',
+          'module': 'dart',
           'user': false,
         });
       }
@@ -90,7 +96,7 @@ class Bugsee {
 
     await _channel.invokeMethod('logException', <String, dynamic>{
       'name': 'FlutterManagedException',
-      'reason': '$ex',
+      'reason': json.encode(ex),
       'handled': handled,
       'signature': '${ds.value}',
     });
