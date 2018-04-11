@@ -49,7 +49,7 @@ Events are identified by a string and can have an optional dictionary of paramet
 
     // ... or with additional custom parameters
     Bugsee.event(name: 'payment_processed', parameters: <String, dynamic>{
-                	'amount": 125,
+                	'amount': 125,
                 	'currency': 'USD'});
 ```
 
