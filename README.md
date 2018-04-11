@@ -44,13 +44,13 @@ TBD
 Events are identified by a string and can have an optional dictionary of parameters that will be stored and passed along with the report.
 
 ```dart
-	// Without any additional parameters
-    Bugsee.event(name: payment_processed');
+// Without any additional parameters
+Bugsee.event(name: payment_processed');
 
-    // ... or with additional custom parameters
-    Bugsee.event(name: 'payment_processed', parameters: <String, dynamic>{
-                	'amount': 125,
-                	'currency': 'USD'});
+// ... or with additional custom parameters
+Bugsee.event(name: 'payment_processed', parameters: <String, dynamic>{
+                'amount': 125,
+                'currency': 'USD'});
 ```
 
 ### Traces
@@ -58,9 +58,9 @@ Events are identified by a string and can have an optional dictionary of paramet
 Traces may be useful when you want to trace how a specific variable or state changes over time right before the problem happens.
 
 ```dart
-    // Manually set value of 15 to property named "credit_balance"
-    // any time it changes
-    Bugsee.trace(name: 'credit_balance', value: 15);    
+// Manually set value of 15 to property named "credit_balance"
+// any time it changes
+Bugsee.trace(name: 'credit_balance', value: 15);    
 ```
 
 ## Crash reporting
@@ -115,15 +115,15 @@ Alternatively, or in addition to it, you can use try/catch to propagate
 individual exceptions to Bugsee:
 
 ```dart
-  try {
+try {
     // do somethind that may throw
-  } catch(exception, stackTrace) {
-    await Bugsee.logException(
-      exception: exception,
-      handled: false,
-      stackTrace: stackTrace,
+    } catch(exception, stackTrace) {
+        await Bugsee.logException(
+          exception: exception,
+          handled: false,
+          stackTrace: stackTrace,
     );
-  }
+}
 ```
 
 Bugsee can be further customized. For a complete SDK documentation covering additional options and API's visit [https://docs.bugsee.com/sdk/flutter](https://docs.bugsee.com/sdk/flutter)
