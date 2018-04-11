@@ -41,10 +41,10 @@
       <excludeFolder url="file://$MODULE_DIR$/example/ios/Flutter/flutter_assets/packages" />
       <excludeFolder url="file://$MODULE_DIR$/example/ios/Flutter/packages" />
       <excludeFolder url="file://$MODULE_DIR$/example/ios/Frameworks/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/example/ios/Pods/.symlinks/flutter/ios-release/Flutter.framework/Headers/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/example/ios/Pods/.symlinks/flutter/ios-release/Flutter.framework/Modules/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/example/ios/Pods/.symlinks/flutter/ios-release/Flutter.framework/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/example/ios/Pods/.symlinks/flutter/ios-release/packages" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/Pods/.symlinks/flutter/ios/Flutter.framework/Headers/packages" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/Pods/.symlinks/flutter/ios/Flutter.framework/Modules/packages" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/Pods/.symlinks/flutter/ios/Flutter.framework/packages" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/Pods/.symlinks/flutter/ios/packages" />
       <excludeFolder url="file://$MODULE_DIR$/example/ios/Pods/.symlinks/flutter/packages" />
       <excludeFolder url="file://$MODULE_DIR$/example/ios/Pods/.symlinks/packages" />
       <excludeFolder url="file://$MODULE_DIR$/example/ios/Pods/.symlinks/plugins/bugsee/packages" />
@@ -84,6 +84,7 @@
       <excludeFolder url="file://$MODULE_DIR$/example/ios/Runner.xcworkspace/packages" />
       <excludeFolder url="file://$MODULE_DIR$/example/ios/Runner.xcworkspace/xcshareddata/packages" />
       <excludeFolder url="file://$MODULE_DIR$/example/ios/Runner.xcworkspace/xcuserdata/finik.xcuserdatad/packages" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/Runner.xcworkspace/xcuserdata/finik.xcuserdatad/xcdebugger/packages" />
       <excludeFolder url="file://$MODULE_DIR$/example/ios/Runner.xcworkspace/xcuserdata/packages" />
       <excludeFolder url="file://$MODULE_DIR$/example/ios/Runner/Assets.xcassets/AppIcon.appiconset/packages" />
       <excludeFolder url="file://$MODULE_DIR$/example/ios/Runner/Assets.xcassets/LaunchImage.imageset/packages" />
