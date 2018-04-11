@@ -1,8 +1,8 @@
 name: bugsee
-description: A new flutter plugin project.
-version: 0.0.1
-author:
-homepage:
+description: Bugsee Flutter SDK.
+version: 1.0.0
+author: Bugsee
+homepage: https://www.bugsee.com
 
 dependencies:
   flutter:
