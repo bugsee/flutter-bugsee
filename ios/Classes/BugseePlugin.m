@@ -53,11 +53,11 @@
         NSString *name = call.arguments[@"name"];
         NSString *reason = call.arguments[@"reason"];
         BOOL handled = [call.arguments[@"handled"] boolValue];
-        id traces = call.arguments[@"traces"];
+        id frames = call.arguments[@"frames"];
 
         [Bugsee logException:name
                       reason:reason
-                      frames:traces
+                      frames:frames
                         type:@"flutter"
                      handled:handled];
 

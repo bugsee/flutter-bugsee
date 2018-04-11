@@ -2,7 +2,7 @@ PODS:
   - bugsee (0.0.1):
     - Bugsee
     - Flutter
-  - Bugsee (1.17.18)
+  - Bugsee (1.18.0)
   - Flutter (1.0.0)
 
 DEPENDENCIES:
@@ -16,7 +16,7 @@ EXTERNAL SOURCES:
     :path: Pods/.symlinks/flutter/ios
 
 SPEC CHECKSUMS:
-  Bugsee: 17a69b0f6b785ae8802ee501167717e202b3525f
+  Bugsee: 7c768eff985dad75808e181ec4b3e18f552beec6
   bugsee: 48c987e5dea6638e9a1aeb5b6b32c1c01514b845
   Flutter: 58dd7d1b27887414a370fcccb9e645c08ffd7a6a
 

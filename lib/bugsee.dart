@@ -43,31 +43,48 @@ class Bugsee {
       ? new Chain.forTrace(stackTrace)
       : new Chain.parse(stackTrace);
 
-    final List<dynamic> traces = <dynamic>[];
-	var ds = new DigestSink();
-	var s = sha1.startChunkedConversion(ds);
+    final List<Map<String, dynamic>> frames = <Map<String, dynamic>>[];
+
+	  var ds = new DigestSink();
+	  var s = sha1.startChunkedConversion(ds);
   	for (int t = 0; t < chain.traces.length; t += 1) {
-
-    	final List<Map<String, dynamic>> frames = <Map<String, dynamic>>[];
     	for (int f = 0; f < chain.traces[t].frames.length; f += 1) {
-    		frames.add(<String, dynamic>{
-			  'uri': '${chain.traces[t].frames[f].uri}',
-			  'member': chain.traces[t].frames[f].member,
-			  'line': chain.traces[t].frames[f].line,
-			  'isCore': chain.traces[t].frames[f].isCore,
-			});
+    	  dynamic frame = chain.traces[t].frames[f];
 
-			s.add(UTF8.encode('${chain.traces[t].frames[f].uri}'));
+    	  dynamic uri = frame.uri;
+    	  dynamic user = true;
+
+        if (frame.uri.scheme != 'dart' && frame.uri.scheme != 'package')
+          uri = frame.uri.pathSegments.last;
+
+        if (frame.uri.scheme == 'hooks' ||
+            frame.uri.scheme != 'dart' ||
+            frame.package == 'flutter')
+          user = false;
+
+    		frames.add(<String, dynamic>{
+			    'trace': '${frame.member} ($uri:${frame.line}:${frame.column})',
+          'module': frame.package,
+			    'user': user
+			  });
+
+			  s.add(utf8.encode(frame.location));
     	}
 
-    	traces.add(frames);
+      if (t < chain.traces.length - 1) {
+    	  frames.add(<String, dynamic>{
+          'trace': '<asyncronous gap>',
+          'module': 'async',
+          'user': false,
+        });
+      }
   	}
   	s.close();
 
     final dynamic ex = <String, dynamic>{
       'name': '${exception.runtimeType}',
       'reason': '$exception',
-      'traces': traces,
+      'frames': frames,
       'signature': '${ds.value}',
     };
 
