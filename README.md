@@ -25,13 +25,26 @@ Bugsee SDK has to be launched within the native part of your application
 
 ### iOS
 
-Locate your ios/Runner/AppDelegate.m and add the following line:
+Locate your ios/Runner/AppDelegate.m and add the following:
 
-```
-[Bugsee launchWithToken:<YOUR_APP_TOKEN>];
+```objectivec
+#import "Bugsee/Bugsee.h"
+
+/// ...
+
+@implementation AppDelegate
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+  [GeneratedPluginRegistrant registerWithRegistry:self];
+
+  [Bugsee launchWithToken:<YOUR APP TOKEN>];
+  
+  // Override point for customization after application launch.
+  return [super application:application didFinishLaunchingWithOptions:launchOptions];
+}
 ```
 
-Refer to official [documentation](https://docs.bugsee.com/sdk/ios/installation) for additional launch options.
+Refer to official native iOS [documentation](https://docs.bugsee.com/sdk/ios/installation) for additional launch options.
 
 ### Android
 
