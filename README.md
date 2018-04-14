@@ -37,7 +37,7 @@ Locate your ios/Runner/AppDelegate.m and add the following:
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
   [GeneratedPluginRegistrant registerWithRegistry:self];
 
-  [Bugsee launchWithToken:<YOUR APP TOKEN>];
+  [Bugsee launchWithToken:@"<YOUR APP TOKEN>"];
   
   // Override point for customization after application launch.
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
@@ -48,7 +48,45 @@ Refer to official native iOS [documentation](https://docs.bugsee.com/sdk/ios/ins
 
 ### Android
 
-TBD
+Add native Bugsee SDK to your build.gradle:
+
+```groovy
+dependencies {
+    implementation 'com.bugsee:bugsee-android:+'
+}
+
+```
+
+If you don't have it already, create your own class for main application and make sure you extend FlutterApplication when doing so.
+Launch the Bigsee SDK from there:
+
+```java
+import com.bugsee.library.Bugsee;
+import java.util.HashMap;
+import io.flutter.app.FlutterApplication;
+
+public class MainApplication extends FlutterApplication {
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        HashMap<String, Object> options = new HashMap<>();
+
+        // Regular doesn't capture anything in Flutter for now
+        options.put(Bugsee.Option.ExtendedVideoMode, true);
+        Bugsee.launch(this, "<YOUR APP TOKEN>", options);
+    }
+}
+
+```
+
+Modify the manifest to point to this Application:
+
+```xml
+    <application
+        android:name="com.acme.app.MainApplication"
+        ...
+```
+
 
 ## Custom data
 
@@ -76,7 +114,18 @@ Traces may be useful when you want to trace how a specific variable or state cha
 Bugsee.trace(name: 'credit_balance', value: 15);    
 ```
 
-## Crash reporting
+## Manual reporting
+
+You can register non fatal exceptions using the following method:
+```dart
+try {
+  some_code_that_throws();
+} catch (ex, st) {
+  await Bugsee.logException(exception: ex, handled: true, stackTrace: st);
+}
+```
+
+## Auto exception handling
 
 Create the following method in your code:
 
@@ -122,21 +171,6 @@ runZoned<Future<Null>>(() async {
   }, onError: (error, stackTrace) async {
   await _reportError(error, stackTrace);
 });
-```
-
-Alternatively, or in addition to it, you can use try/catch to propagate
-individual exceptions to Bugsee:
-
-```dart
-try {
-    // do somethind that may throw
-    } catch(exception, stackTrace) {
-        await Bugsee.logException(
-          exception: exception,
-          handled: false,
-          stackTrace: stackTrace,
-    );
-}
 ```
 
 Bugsee can be further customized. For a complete SDK documentation covering additional options and API's visit [https://docs.bugsee.com/sdk/flutter](https://docs.bugsee.com/sdk/flutter)

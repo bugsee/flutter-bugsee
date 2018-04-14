@@ -2,6 +2,7 @@ name: bugsee_example
 description: Demonstrates how to use the bugsee plugin.
 
 dependencies:
+  http: any
   flutter:
     sdk: flutter
 

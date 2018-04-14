@@ -13,6 +13,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 
 
 // This imports the Bugsee plugin
@@ -143,6 +144,13 @@ class MyHomePage extends StatelessWidget {
               },
             ),
             new RaisedButton(
+              child: new Text('Network request'),
+              elevation: 1.0,
+              onPressed: () async {
+                http.get('https://jsonplaceholder.typicode.com/posts/1');
+              },
+            ),
+            new RaisedButton(
               child: new Text('Custom events'),
               elevation: 1.0,
               onPressed: () async {
@@ -161,6 +169,7 @@ class MyHomePage extends StatelessWidget {
                 Bugsee.setAttribute(key: 'name', value: 'John Doe');
                 Bugsee.setAttribute(key: 'married', value: false);
               },
+
             ),
           ],
         ),
