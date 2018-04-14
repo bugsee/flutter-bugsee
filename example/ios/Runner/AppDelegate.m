@@ -8,7 +8,7 @@
     [GeneratedPluginRegistrant registerWithRegistry:self];
     // Override point for customization after application launch.
 
-    [Bugsee launchWithToken:@"mysecretapptoken" andOptions:@{@"endpoint": @"https://apidev.bugsee.com/v2"}];
+    [Bugsee launchWithToken:@"YOUR APP TOKEN"];
     
     return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }

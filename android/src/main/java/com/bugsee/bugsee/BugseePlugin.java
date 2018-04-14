@@ -15,7 +15,12 @@ import com.bugsee.library.Bugsee;
  * BugseePlugin
  */
 public class BugseePlugin implements MethodCallHandler {
-    /**
+    private static class FlutterManagedException extends Throwable {
+        public FlutterManagedException(String message) {
+            super(message);
+        }
+    }
+/**
      * Plugin registration.
      */
     public static void registerWith(Registrar registrar) {
@@ -37,7 +42,31 @@ public class BugseePlugin implements MethodCallHandler {
         Map<String, Object> arguments = (Map<String, Object>) call.arguments;
         String name = (String)arguments.get("name");
         Object value = arguments.get("value");
-//        Bugsee.event(name, value);
+        Bugsee.trace(name, value);
+    }
+
+    private void handleSetAttribute(MethodCall call, final Result result) {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> arguments = (Map<String, Object>) call.arguments;
+        String key = (String)arguments.get("key");
+        Object value = arguments.get("value");
+        Bugsee.setAttribute(key, value);
+    }
+
+    private void handleLogException(MethodCall call, final Result result) {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> arguments = (Map<String, Object>) call.arguments;
+        String name = (String)arguments.get("name");
+        String reason = (String)arguments.get("reason");
+        Boolean isHandled = (Boolean)arguments.get("handled");
+
+        FlutterManagedException ex = new FlutterManagedException(reason);
+
+        if (isHandled) {
+            Bugsee.logException(ex);
+        } else {
+            Bugsee.onUncaughtException(Thread.currentThread(), ex);
+        }
     }
 
     @Override
@@ -49,6 +78,14 @@ public class BugseePlugin implements MethodCallHandler {
 
             case "trace":
                 handleTrace(call, result);
+                break;
+
+            case "logException":
+                handleLogException(call, result);
+                break;
+
+            case "setAttribute":
+                handleSetAttribute(call, result);
                 break;
 
             default:

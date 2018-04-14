@@ -132,6 +132,17 @@ class MyHomePage extends StatelessWidget {
               },
             ),
             new RaisedButton(
+              child: new Text('Handled exception'),
+              elevation: 1.0,
+              onPressed: () async {
+                try {
+                  throw new FormatException('Expected at least 1 section');
+                } catch (ex, st) {
+                  Bugsee.logException(exception: ex, handled: true, stackTrace: st);
+                }
+              },
+            ),
+            new RaisedButton(
               child: new Text('Custom events'),
               elevation: 1.0,
               onPressed: () async {
