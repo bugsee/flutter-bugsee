@@ -1,4 +1,4 @@
-# bugsee
+# Bugsee for flutter
 
 Bugsee is a mobile SDK that adds crucial information to your bug and crash reports. Bugsee reports include video of user actions, network traffic, console logs and many other important traces from your app. Now you know what exactly led to the unexpected behavior.
 
@@ -87,6 +87,7 @@ Modify the manifest to point to this Application:
         ...
 ```
 
+Refer to official native Android [documentation](https://docs.bugsee.com/sdk/android/installation) for additional launch options.
 
 ## Custom data
 
@@ -96,7 +97,7 @@ Events are identified by a string and can have an optional dictionary of paramet
 
 ```dart
 // Without any additional parameters
-Bugsee.event(name: payment_processed');
+Bugsee.event(name: 'payment_processed');
 
 // ... or with additional custom parameters
 Bugsee.event(name: 'payment_processed', parameters: <String, dynamic>{
