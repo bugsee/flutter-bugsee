@@ -62,7 +62,7 @@ Future<Null> main() async {
     }
   };
 
-  // This creates a [Zone] that contains the Flutter application and stablishes
+  // This creates a [Zone] that contains the Flutter application and establishes
   // an error handler that captures errors and reports them.
   //
   // Using a zone makes sure that as many errors as possible are captured,
@@ -73,9 +73,9 @@ Future<Null> main() async {
   //
   // - https://api.dartlang.org/stable/1.24.2/dart-async/Zone-class.html
   // - https://www.dartlang.org/articles/libraries/zones
-  runZoned<Future<Null>>(() async {
+  runZonedGuarded<Future<Null>>(() async {
     runApp(new CrashyApp());
-  }, onError: (error, stackTrace) async {
+  }, (error, stackTrace) async {
     await _reportError(error, stackTrace);
   });
 }
@@ -98,80 +98,108 @@ class MyHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
-        title: new Text('Crashy'),
+        title: new Text('Bugsee sample app'),
       ),
-      body: new Center(
-        child: new Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            new RaisedButton(
-              child: new Text('Dart exception'),
-              elevation: 1.0,
-              onPressed: () {
-                throw new StateError('This is a Dart exception.');
-              },
-            ),
-            new RaisedButton(
-              child: new Text('async Dart exception'),
-              elevation: 1.0,
-              onPressed: () async {
-                foo() async {
-                  throw new StateError('This is an async Dart exception.');
-                }
-                bar() async {
-                  await foo();
-                }
-                await bar();
-              },
-            ),
-            new RaisedButton(
-              child: new Text('Java exception'),
-              elevation: 1.0,
-              onPressed: () async {
-                final channel = const MethodChannel('crashy-custom-channel');
-                await channel.invokeMethod('blah');
-              },
-            ),
-            new RaisedButton(
-              child: new Text('Handled exception'),
-              elevation: 1.0,
-              onPressed: () async {
-                try {
-                  throw new FormatException('Expected at least 1 section');
-                } catch (ex, st) {
-                  Bugsee.logException(exception: ex, handled: true, stackTrace: st);
-                }
-              },
-            ),
-            new RaisedButton(
-              child: new Text('Network request'),
-              elevation: 1.0,
-              onPressed: () async {
-                http.get('https://jsonplaceholder.typicode.com/posts/1');
-              },
-            ),
-            new RaisedButton(
-              child: new Text('Custom events'),
-              elevation: 1.0,
-              onPressed: () async {
-                dynamic params = <String, dynamic>{};
-                params['string'] = 'test';
-                params['int'] = 5;
-                params['float'] = 0.55;
-                params['bool'] =  true;
-                Bugsee.event(name: 'event', parameters: params);
-                Bugsee.trace(name: 'number', value: 5);
-                Bugsee.trace(name: 'float', value: 0.55);
-                Bugsee.trace(name: 'string', value: 'test');
-                Bugsee.trace(name: 'bool', value: true);
-                Bugsee.trace(name: 'map', value: params);
-                Bugsee.setAttribute(key: 'age', value: 36);
-                Bugsee.setAttribute(key: 'name', value: 'John Doe');
-                Bugsee.setAttribute(key: 'married', value: false);
-              },
+      body: new SingleChildScrollView(
+        child: new Center(
+          child: new Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              new RaisedButton(
+                child: new Text('Dart exception'),
+                elevation: 1.0,
+                onPressed: () {
+                  throw new StateError('This is a Dart exception.');
+                },
+              ),
+              new RaisedButton(
+                child: new Text('Async Dart exception'),
+                elevation: 1.0,
+                onPressed: () async {
+                  foo() async {
+                    throw new StateError('This is an async Dart exception.');
+                  }
+                  bar() async {
+                    await foo();
+                  }
+                  await bar();
+                },
+              ),
+              new RaisedButton(
+                child: new Text('Java exception'),
+                elevation: 1.0,
+                onPressed: () async {
+                  final channel = const MethodChannel('crashy-custom-channel');
+                  await channel.invokeMethod('blah');
+                },
+              ),
+              new RaisedButton(
+                child: new Text('Handled exception'),
+                elevation: 1.0,
+                onPressed: () async {
+                  try {
+                    throw new FormatException('Expected at least 1 section');
+                  } catch (ex, st) {
+                    Bugsee.logException(exception: ex, handled: true, stackTrace: st);
+                  }
+                },
+              ),
+              new RaisedButton(
+                child: new Text('Network request'),
+                elevation: 1.0,
+                onPressed: () async {
+                  http.get('https://jsonplaceholder.typicode.com/posts/1');
+                },
+              ),
+              new RaisedButton(
+                child: new Text('Custom data'),
+                elevation: 1.0,
+                onPressed: () async {
+                  dynamic params = <String, dynamic>{};
+                  params['string'] = 'test';
+                  params['int'] = 5;
+                  params['float'] = 0.55;
+                  params['bool'] =  true;
+                  await Bugsee.event(name: 'event', parameters: params);
+                  await Bugsee.trace(name: 'number', value: 5);
+                  await Bugsee.trace(name: 'float', value: 0.55);
+                  await Bugsee.trace(name: 'string', value: 'test');
+                  await Bugsee.trace(name: 'bool', value: true);
+                  await Bugsee.trace(name: 'map', value: params);
+                  await Bugsee.clearAllAttributes();
+                  await Bugsee.setAttribute(key: 'age', value: 36);
+                  await Bugsee.setAttribute(key: 'name', value: 'John Doe');
+                  await Bugsee.setAttribute(key: 'married', value: false);
+                  await Bugsee.removeAllSecureRects();
+                  await Bugsee.addSecureRect(x: 0, y: 0, width: 20, height: 20);
+                  await Bugsee.addSecureRect(x: 0, y: 0, width: 30, height: 30);
+                  await Bugsee.removeSecureRect(x: 0, y: 0, width: 30, height: 30);
+                },
 
-            ),
-          ],
+              ),
+              new RaisedButton(
+                child: new Text('Show feedback'),
+                elevation: 1.0,
+                onPressed: () async {
+                  Bugsee.showFeedbackUI();
+                },
+              ),
+              new RaisedButton(
+                child: new Text('Show report'),
+                elevation: 1.0,
+                onPressed: () async {
+                  Bugsee.showPrefilledReportingUI(summary: "Test from Flutter", description: "Test description", severity: BugseeSeverityLevel.High);
+                },
+              ),
+              new RaisedButton(
+                child: new Text('Upload report'),
+                elevation: 1.0,
+                onPressed: () async {
+                  Bugsee.upload(summary: "Test from Flutter", description: "Test description", severity: BugseeSeverityLevel.High);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

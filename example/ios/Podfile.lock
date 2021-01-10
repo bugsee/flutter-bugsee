@@ -2,24 +2,28 @@ PODS:
   - bugsee (0.0.1):
     - Bugsee
     - Flutter
-  - Bugsee (1.18.0)
+  - Bugsee (1.25.6)
   - Flutter (1.0.0)
 
 DEPENDENCIES:
-  - bugsee (from `Pods/.symlinks/plugins/bugsee/ios`)
+  - bugsee (from `Pods/.symlinks/plugins/flutter-bugsee/ios`)
   - Flutter (from `Pods/.symlinks/flutter/ios`)
+
+SPEC REPOS:
+  trunk:
+    - Bugsee
 
 EXTERNAL SOURCES:
   bugsee:
-    :path: Pods/.symlinks/plugins/bugsee/ios
+    :path: Pods/.symlinks/plugins/flutter-bugsee/ios
   Flutter:
     :path: Pods/.symlinks/flutter/ios
 
 SPEC CHECKSUMS:
-  Bugsee: 7c768eff985dad75808e181ec4b3e18f552beec6
+  Bugsee: 88a961ca3e14f44065d376acbd7fe3ba3d898017
   bugsee: 48c987e5dea6638e9a1aeb5b6b32c1c01514b845
-  Flutter: 58dd7d1b27887414a370fcccb9e645c08ffd7a6a
+  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
 
 PODFILE CHECKSUM: 0420ab312a523ae0eecfb1fc19ea51dd82cc17c7
 
-COCOAPODS: 1.3.1
+COCOAPODS: 1.9.1

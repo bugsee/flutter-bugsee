@@ -1,17 +1,17 @@
 name: bugsee
 description: Bugsee Flutter SDK
-version: 1.0.2
+version: 1.1.0
 author: Bugsee <support@bugsee.com>
 homepage: https://github.com/bugsee/flutter-bugsee
 
 environment:
-    sdk: ">=1.8.0 <2.0.0"
+    sdk: ">=2.8.0 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
   stack_trace: ">=1.0.0 <2.0.0"
-  crypto: "2.0.2+1"
+  crypto: "2.1.4"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
