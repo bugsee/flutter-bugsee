@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name             = 'bugsee'
-  s.version          = '0.0.1'
-  s.summary          = 'A new flutter plugin project.'
+  s.version          = '2.0.0'
+  s.summary          = 'Bugsee plugin for Flutter'
   s.description      = <<-DESC
 A new flutter plugin project.
                        DESC
