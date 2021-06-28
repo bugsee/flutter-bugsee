@@ -51,6 +51,7 @@ import com.bugsee.library.logs.LogListener;
 import com.bugsee.library.network.NetworkEventFilter;
 import com.bugsee.library.network.NetworkEventListener;
 import com.bugsee.library.network.data.BugseeNetworkEvent;
+import com.bugsee.library.network.data.NetworkEventType;
 
 /**
  * BugseePlugin
@@ -715,12 +716,16 @@ public class BugseePlugin implements FlutterPlugin, MethodCallHandler, ActivityA
 
     private void filterNetworkEvent(final BugseeNetworkEvent bugseeNetworkEvent,
             final NetworkEventListener networkEventListener) {
+        final NetworkEventType eventStage = bugseeNetworkEvent.getEventType();
         HashMap<String, Object> serializedEvent = new HashMap<String, Object>() {
             {
                 put("url", bugseeNetworkEvent.getUrl());
                 put("body", bugseeNetworkEvent.getBody());
                 put("method", bugseeNetworkEvent.getMethod());
-                put("stage", bugseeNetworkEvent.getEventType());
+                // event stage in not a primitive, but rather an enum value
+                // hence we need to convert it to string to let it be
+                // properly passed through the codec
+                put("stage", eventStage != null ? eventStage.toString() : null);
                 // put("redirectedFrom", ?);
                 put("headers", bugseeNetworkEvent.getHeaders());
             }

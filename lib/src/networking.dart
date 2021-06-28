@@ -47,6 +47,7 @@ void _registerCompleteEvent(_BugseeHttpClientResponse response,
     'id': response.requestID,
     'timestamp': timestamp ?? response.timestamp,
     'url': response.originalUrl,
+    'method': response.originalMethod,
     'type': isError ? 'error' : 'complete',
     'size': body?.length ?? response.contentLength,
     'status': response.statusCode
@@ -81,7 +82,7 @@ void _registerCompleteEvent(_BugseeHttpClientResponse response,
 
 Future<_BugseeHttpClientRequest> _wrapRequest(
     Future<HttpClientRequest> request) async {
-  var timestamp = DateTime.now().microsecondsSinceEpoch;
+  var timestamp = DateTime.now().millisecondsSinceEpoch;
 
   return request.then((actualRequest) {
     if (actualRequest is _BugseeHttpClientRequest) {
@@ -92,13 +93,18 @@ Future<_BugseeHttpClientRequest> _wrapRequest(
   });
 }
 
-_BugseeHttpClientResponse _wrapResponse(HttpClientResponse response,
-    String requestID, String originalUrl, int timestamp) {
+_BugseeHttpClientResponse _wrapResponse(
+    HttpClientResponse response,
+    String requestID,
+    String originalUrl,
+    String originalMethod,
+    int timestamp) {
   if (response is _BugseeHttpClientResponse) {
     return response;
   }
 
-  return _BugseeHttpClientResponse(response, requestID, originalUrl, timestamp);
+  return _BugseeHttpClientResponse(
+      response, requestID, originalUrl, originalMethod, timestamp);
 }
 
 void _readRequestBody(_BugseeHttpClientRequest request) {
@@ -316,7 +322,7 @@ class _BugseeHttpClientRequest extends HttpClientRequest {
 
   _BugseeHttpClientRequest(this._httpClientRequest, [int? eventTimestamp])
       : requestID = _globalUuid.v4(),
-        timestamp = eventTimestamp ?? DateTime.now().microsecondsSinceEpoch {
+        timestamp = eventTimestamp ?? DateTime.now().millisecondsSinceEpoch {
     // subscribe for the completion event right away so we will be notified
     // when request completes
     var request = this;
@@ -326,8 +332,8 @@ class _BugseeHttpClientRequest extends HttpClientRequest {
     request.done.then((value) {
       _readRequestBody(request);
 
-      var response = _wrapResponse(
-          value, requestID, request.uri.toString(), this.timestamp);
+      var response = _wrapResponse(value, requestID, request.uri.toString(),
+          request.method, this.timestamp);
       _registerCompleteEvent(
           response, null, null, DateTime.now().millisecondsSinceEpoch);
       return response;
@@ -391,8 +397,12 @@ class _BugseeHttpClientRequest extends HttpClientRequest {
 
   @override
   Future<HttpClientResponse> close() {
-    return _httpClientRequest.close().then((response) => _wrapResponse(response,
-        requestID, _httpClientRequest.uri.toString(), this.timestamp));
+    return _httpClientRequest.close().then((response) => _wrapResponse(
+        response,
+        requestID,
+        _httpClientRequest.uri.toString(),
+        _httpClientRequest.method,
+        this.timestamp));
   }
 
   @override
@@ -403,8 +413,12 @@ class _BugseeHttpClientRequest extends HttpClientRequest {
 
   @override
   Future<HttpClientResponse> get done {
-    return _httpClientRequest.done.then((response) => _wrapResponse(response,
-        requestID, _httpClientRequest.uri.toString(), this.timestamp));
+    return _httpClientRequest.done.then((response) => _wrapResponse(
+        response,
+        requestID,
+        _httpClientRequest.uri.toString(),
+        _httpClientRequest.method,
+        this.timestamp));
   }
 
   @override
@@ -470,12 +484,13 @@ class _BugseeHttpClientResponse extends HttpClientResponse {
   final HttpClientResponse _httpClientResponse;
   final String requestID;
   final String originalUrl;
+  final String originalMethod;
   final int timestamp;
   Stream<List<int>>? _wrapperStream;
   StringBuffer? _receiveBuffer = StringBuffer();
 
   _BugseeHttpClientResponse(this._httpClientResponse, this.requestID,
-      this.originalUrl, this.timestamp) {
+      this.originalUrl, this.originalMethod, this.timestamp) {
     _wrapperStream = _readAndRecreateStream(_httpClientResponse);
   }
 
@@ -673,7 +688,8 @@ class _BugseeHttpClientResponse extends HttpClientResponse {
         ._httpClientResponse
         .redirect(method, url, followLoops)
         .then((response) {
-      return _wrapResponse(response, requestID, originalUrl, this.timestamp);
+      return _wrapResponse(
+          response, requestID, originalUrl, originalMethod, this.timestamp);
     });
   }
 
