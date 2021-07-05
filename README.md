@@ -10,16 +10,16 @@ Install Bugsee plugin into your dart project by adding it to dependecies in your
 
 ```yaml
 dependencies:
-  bugsee:
+  bugsee_flutter:
     git:
-      url: git@github.com:bugsee/flutter-bugsee.git
+      url: https://github.com/bugsee/flutter-bugsee
       # ref: 1.2.3 # if forcing a specific version by tag or branch
 ```
 
 ## Launching
 
 ```dart
-import 'package:bugsee/bugsee.dart';
+import 'package:bugsee_flutter/bugsee.dart';
 
 Future<Null> launchBugsee(Function(bool isBugseeLaunched) appRunner) async {
   var launchOptions;
@@ -70,12 +70,13 @@ Traces may be useful when you want to trace how a specific variable or state cha
 ```dart
 // Manually set value of 15 to property named "credit_balance"
 // any time it changes
-Bugsee.trace(name: 'credit_balance', value: 15);    
+Bugsee.trace(name: 'credit_balance', value: 15);
 ```
 
 ## Manual reporting
 
 You can register non fatal exceptions using the following method:
+
 ```dart
 try {
   some_code_that_throws();
@@ -83,6 +84,5 @@ try {
   await Bugsee.logException(exception: ex, handled: true, stackTrace: st);
 }
 ```
-
 
 Bugsee can be further customized. For a complete SDK documentation covering additional options and API's visit [https://docs.bugsee.com/sdk/flutter](https://docs.bugsee.com/sdk/flutter)

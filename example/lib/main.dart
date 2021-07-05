@@ -8,7 +8,7 @@ import 'dart:math';
 import 'dart:typed_data';
 
 // This imports the Bugsee plugin
-import 'package:bugsee/bugsee.dart';
+import 'package:bugsee_flutter/bugsee.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 

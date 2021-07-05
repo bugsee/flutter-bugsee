@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'dart:core';
 import 'dart:io';
 
-import 'package:bugsee/src/state.dart';
 import 'package:uuid/uuid.dart';
 
 import '../bugsee.dart';
+import 'state.dart';
 
 const Uuid _globalUuid = const Uuid();
 

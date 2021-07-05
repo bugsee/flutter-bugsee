@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:bugsee/src/networking.dart';
-import 'package:bugsee/src/ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:stack_trace/stack_trace.dart';
@@ -12,9 +10,11 @@ import 'src/appearance.dart';
 import 'src/callbacks.dart';
 import 'src/enums.dart';
 import 'src/exceptions.dart';
+import 'src/networking.dart';
 import 'src/options.dart';
 import 'src/state.dart';
 import 'src/types.dart';
+import 'src/ui.dart';
 import 'src/version.dart';
 
 export 'src/appearance.dart';
