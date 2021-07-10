@@ -716,156 +716,162 @@ public class BugseePlugin implements FlutterPlugin, MethodCallHandler, ActivityA
 
     private void filterNetworkEvent(final BugseeNetworkEvent bugseeNetworkEvent,
             final NetworkEventListener networkEventListener) {
-        final NetworkEventType eventStage = bugseeNetworkEvent.getEventType();
-        HashMap<String, Object> serializedEvent = new HashMap<String, Object>() {
-            {
-                put("url", bugseeNetworkEvent.getUrl());
-                put("body", bugseeNetworkEvent.getBody());
-                put("method", bugseeNetworkEvent.getMethod());
-                // event stage in not a primitive, but rather an enum value
-                // hence we need to convert it to string to let it be
-                // properly passed through the codec
-                put("stage", eventStage != null ? eventStage.toString() : null);
-                // put("redirectedFrom", ?);
-                put("headers", bugseeNetworkEvent.getHeaders());
-            }
-        };
+        if (channel != null) {
+            final NetworkEventType eventStage = bugseeNetworkEvent.getEventType();
+            HashMap<String, Object> serializedEvent = new HashMap<String, Object>() {
+                {
+                    put("url", bugseeNetworkEvent.getUrl());
+                    put("body", bugseeNetworkEvent.getBody());
+                    put("method", bugseeNetworkEvent.getMethod());
+                    // event stage in not a primitive, but rather an enum value
+                    // hence we need to convert it to string to let it be
+                    // properly passed through the codec
+                    put("stage", eventStage != null ? eventStage.toString() : null);
+                    // put("redirectedFrom", ?);
+                    put("headers", bugseeNetworkEvent.getHeaders());
+                }
+            };
 
-        channel.invokeMethod("onNetworkEvent", Collections.singletonList(serializedEvent), new Result() {
-            @Override
-            public void success(@Nullable Object result) {
-                if (result instanceof Map) {
-                    try {
-                        Map<String, Object> resultData = (Map<String, Object>) result;
-                        bugseeNetworkEvent.setBody((String) resultData.get("body"));
-                        bugseeNetworkEvent.setUrl((String) resultData.get("url"));
-                        bugseeNetworkEvent.setHeaders((Map<String, Object>) resultData.get("headers"));
-                        networkEventListener.onEvent(bugseeNetworkEvent);
-                    } catch (Exception e) {
-                        BugseeInternalAdapter.logWarning(TAG,
-                                "Failed to handle network event filtering result. Error: " + e.toString(), false);
+            channel.invokeMethod("onNetworkEvent", Collections.singletonList(serializedEvent), new Result() {
+                @Override
+                public void success(@Nullable Object result) {
+                    if (result instanceof Map) {
+                        try {
+                            Map<String, Object> resultData = (Map<String, Object>) result;
+                            bugseeNetworkEvent.setBody((String) resultData.get("body"));
+                            bugseeNetworkEvent.setUrl((String) resultData.get("url"));
+                            bugseeNetworkEvent.setHeaders((Map<String, Object>) resultData.get("headers"));
+                            networkEventListener.onEvent(bugseeNetworkEvent);
+                        } catch (Exception e) {
+                            BugseeInternalAdapter.logWarning(TAG,
+                                    "Failed to handle network event filtering result. Error: " + e.toString(), false);
+                        }
+                        return;
                     }
-                    return;
+
+                    networkEventListener.onEvent(null);
                 }
 
-                networkEventListener.onEvent(null);
-            }
+                @Override
+                public void error(String errorCode, @Nullable String errorMessage, @Nullable Object errorDetails) {
+                    // in case of error, do not log anything to prevent possible
+                    // data leakage/disclosure
+                    networkEventListener.onEvent(null);
+                }
 
-            @Override
-            public void error(String errorCode, @Nullable String errorMessage, @Nullable Object errorDetails) {
-                // in case of error, do not log anything to prevent possible
-                // data leakage/disclosure
-                networkEventListener.onEvent(null);
-            }
-
-            @Override
-            public void notImplemented() {
-                // this is also called when null is returned by the remote
-                // end
-                networkEventListener.onEvent(null);
-            }
-        });
+                @Override
+                public void notImplemented() {
+                    // this is also called when null is returned by the remote
+                    // end
+                    networkEventListener.onEvent(null);
+                }
+            });
+        }
     }
 
     private void filterConsoleEvent(final BugseeLog bugseeLog, final LogListener logListener) {
-        ArrayList<Object> arguments = new ArrayList<Object>() {
-            {
-                add(bugseeLog.getMessage());
-                add(bugseeLog.getLevel().getIntValue());
-            }
-        };
+        if (channel != null) {
+            ArrayList<Object> arguments = new ArrayList<Object>() {
+                {
+                    add(bugseeLog.getMessage());
+                    add(bugseeLog.getLevel().getIntValue());
+                }
+            };
 
-        channel.invokeMethod("onLogEvent", arguments, new Result() {
-            @Override
-            public void success(@Nullable Object result) {
-                if (result instanceof List) {
-                    try {
-                        List<Object> resultArray = (List<Object>) result;
-                        bugseeLog.setMessage((String) resultArray.get(0));
-                        bugseeLog.setLevel(BugseeLogLevel.fromIntValue((int) resultArray.get(1)));
-                        logListener.onLog(bugseeLog);
-                    } catch (Exception e) {
-                        BugseeInternalAdapter.logWarning(TAG,
-                                "Failed to handle console event filtering result. Error: " + e.toString(), false);
+            channel.invokeMethod("onLogEvent", arguments, new Result() {
+                @Override
+                public void success(@Nullable Object result) {
+                    if (result instanceof List) {
+                        try {
+                            List<Object> resultArray = (List<Object>) result;
+                            bugseeLog.setMessage((String) resultArray.get(0));
+                            bugseeLog.setLevel(BugseeLogLevel.fromIntValue((int) resultArray.get(1)));
+                            logListener.onLog(bugseeLog);
+                        } catch (Exception e) {
+                            BugseeInternalAdapter.logWarning(TAG,
+                                    "Failed to handle console event filtering result. Error: " + e.toString(), false);
+                        }
+                        return;
                     }
-                    return;
+
+                    logListener.onLog(null);
                 }
 
-                logListener.onLog(null);
-            }
+                @Override
+                public void error(String errorCode, @Nullable String errorMessage, @Nullable Object errorDetails) {
+                    // in case of error, do not log anything to prevent possible
+                    // data leakage/disclosure
+                    logListener.onLog(null);
+                }
 
-            @Override
-            public void error(String errorCode, @Nullable String errorMessage, @Nullable Object errorDetails) {
-                // in case of error, do not log anything to prevent possible
-                // data leakage/disclosure
-                logListener.onLog(null);
-            }
-
-            @Override
-            public void notImplemented() {
-                // this is also called when null is returned by the remote
-                // end
-                logListener.onLog(null);
-            }
-        });
+                @Override
+                public void notImplemented() {
+                    // this is also called when null is returned by the remote
+                    // end
+                    logListener.onLog(null);
+                }
+            });
+        }
     }
 
     private void handleAttachments(final Report report) {
-        List<Object> reportArgs = new ArrayList<Object>() {
-            {
-                add(report.getType().toString());
-                add(report.getSeverity().getIntValue());
-            }
-        };
+        if (channel != null) {
+            List<Object> reportArgs = new ArrayList<Object>() {
+                {
+                    add(report.getType().toString());
+                    add(report.getSeverity().getIntValue());
+                }
+            };
 
-        channel.invokeMethod("onAttachmentsForReport", reportArgs, new Result() {
-            @Override
-            public void success(@Nullable Object result) {
-                if (result instanceof List) {
-                    try {
-                        List<List<Object>> resultData = (List<List<Object>>) result;
-                        ArrayList<CustomAttachment> attachments = new ArrayList<>();
+            channel.invokeMethod("onAttachmentsForReport", reportArgs, new Result() {
+                @Override
+                public void success(@Nullable Object result) {
+                    if (result instanceof List) {
+                        try {
+                            List<List<Object>> resultData = (List<List<Object>>) result;
+                            ArrayList<CustomAttachment> attachments = new ArrayList<>();
 
-                        for (List<Object> itemValues : resultData) {
-                            CustomAttachment attachment = null;
-                            String name = (String) itemValues.get(0);
-                            String fileName = (String) itemValues.get(1);
-                            byte[] rawData = (byte[]) itemValues.get(2);
+                            for (List<Object> itemValues : resultData) {
+                                CustomAttachment attachment = null;
+                                String name = (String) itemValues.get(0);
+                                String fileName = (String) itemValues.get(1);
+                                byte[] rawData = (byte[]) itemValues.get(2);
 
-                            if (rawData != null) {
-                                String dataString = new String(rawData);
-                                if (!dataString.isEmpty()) {
-                                    attachment = CustomAttachment.fromDataString(dataString);
-                                    attachment.setName(name);
-                                    attachment.setFileName(fileName);
-                                    attachments.add(attachment);
+                                if (rawData != null) {
+                                    String dataString = new String(rawData);
+                                    if (!dataString.isEmpty()) {
+                                        attachment = CustomAttachment.fromDataString(dataString);
+                                        attachment.setName(name);
+                                        attachment.setFileName(fileName);
+                                        attachments.add(attachment);
+                                    }
                                 }
                             }
-                        }
 
-                        BugseeInternalAdapter.setAttachments(attachments);
-                        return;
-                    } catch (Exception e) {
-                        BugseeInternalAdapter.logWarning(TAG, "Failed to handle attachments. Error: " + e.toString(),
-                                false);
+                            BugseeInternalAdapter.setAttachments(attachments);
+                            return;
+                        } catch (Exception e) {
+                            BugseeInternalAdapter.logWarning(TAG,
+                                    "Failed to handle attachments. Error: " + e.toString(), false);
+                        }
                     }
+
+                    BugseeInternalAdapter.setAttachments(new ArrayList<CustomAttachment>());
                 }
 
-                BugseeInternalAdapter.setAttachments(new ArrayList<CustomAttachment>());
-            }
+                @Override
+                public void error(String errorCode, @Nullable String errorMessage, @Nullable Object errorDetails) {
+                    // in case of error, just put an empty attachments list
+                    BugseeInternalAdapter.setAttachments(new ArrayList<CustomAttachment>());
+                }
 
-            @Override
-            public void error(String errorCode, @Nullable String errorMessage, @Nullable Object errorDetails) {
-                // in case of error, just put an empty attachments list
-                BugseeInternalAdapter.setAttachments(new ArrayList<CustomAttachment>());
-            }
-
-            @Override
-            public void notImplemented() {
-                // just put an empty attachments list
-                BugseeInternalAdapter.setAttachments(new ArrayList<CustomAttachment>());
-            }
-        });
+                @Override
+                public void notImplemented() {
+                    // just put an empty attachments list
+                    BugseeInternalAdapter.setAttachments(new ArrayList<CustomAttachment>());
+                }
+            });
+        }
     }
 
     private void createHandlersAndCallbacks() {
@@ -934,7 +940,9 @@ public class BugseePlugin implements FlutterPlugin, MethodCallHandler, ActivityA
                     ThreadUtils.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            channel.invokeMethod("onNewFeedbackMessages", Collections.singletonList(list));
+                            if (channel != null) {
+                                channel.invokeMethod("onNewFeedbackMessages", Collections.singletonList(list));
+                            }
                         }
                     });
                 }
@@ -950,8 +958,10 @@ public class BugseePlugin implements FlutterPlugin, MethodCallHandler, ActivityA
                     ThreadUtils.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            channel.invokeMethod("onLifecycleEvent",
-                                    Collections.singletonList(eventType.getIntValue()));
+                            if (channel != null) {
+                                channel.invokeMethod("onLifecycleEvent",
+                                        Collections.singletonList(eventType.getIntValue()));
+                            }
                         }
                     });
                 }
