@@ -1,3 +1,3 @@
-## [1.0.0]
+## CHANGELOG
 
-* Initial public release
+See the detailed changelog in online documentation [here](https://docs.bugsee.com/sdk/flutter/release-notes/)

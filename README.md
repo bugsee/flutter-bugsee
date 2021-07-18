@@ -85,4 +85,4 @@ try {
 }
 ```
 
-Bugsee can be further customized. For a complete SDK documentation covering additional options and API's visit [https://docs.bugsee.com/sdk/flutter](https://docs.bugsee.com/sdk/flutter)
+Bugsee can be further customized. For a complete SDK documentation covering additional options and API's visit [https://docs.bugsee.com/sdk/flutter/](https://docs.bugsee.com/sdk/flutter/installation/)
