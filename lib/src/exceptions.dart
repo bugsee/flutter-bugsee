@@ -117,7 +117,7 @@ class BugseeExceptionHandler {
   Chain _getStackTraceChain([dynamic stackTrace]) {
     Chain chain;
 
-    if (stackTrace == null) {
+    if (stackTrace == null || stackTrace == '') {
       // we instruct the runtime to give us the stack chain with two
       // first frames skipped. This is required to exclude the calls
       // to this method and the one calling it (as this method is

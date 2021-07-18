@@ -142,6 +142,15 @@ class MyHomePage extends StatelessWidget {
                 }
               },
             ),
+            new ElevatedButton(
+              child: new Text('Handled empty exception'),
+              onPressed: () {
+                Bugsee.logException(
+                    new StateError(
+                        'This is a Dart exception with empty stack trace.'),
+                    '');
+              },
+            ),
             new BugseeSecureView(
                 enabled: true,
                 child: new ElevatedButton(

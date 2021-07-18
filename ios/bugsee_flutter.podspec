@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'bugsee_flutter'
-  s.version          = '1.0.3'
+  s.version          = '1.0.4'
   s.summary          = 'Bugsee plugin for Flutter'
   s.description      = <<-DESC
 Bugsee Flutter SDK.
