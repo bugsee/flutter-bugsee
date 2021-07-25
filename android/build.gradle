@@ -1,7 +1,7 @@
 // package plugin.android
 
 group 'com.bugsee.bugsee'
-version '1.0-SNAPSHOT'
+version '1.0.5'
 
 buildscript {
     repositories {
@@ -41,6 +41,6 @@ android {
     }
 
     dependencies {
-        implementation 'com.bugsee:bugsee-android:1.19.16'
+        implementation 'com.bugsee:bugsee-android:1.19.18'
     }
 }
