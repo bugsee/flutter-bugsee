@@ -3,6 +3,7 @@
 .dart_tool/
 .idea
 .packages
+.fvm/
 .pub/
 .flutter-plugins-dependencies
 .vscode/

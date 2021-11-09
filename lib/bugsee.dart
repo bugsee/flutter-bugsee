@@ -1,3 +1,5 @@
+// @dart = 2.12
+
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
@@ -98,7 +100,11 @@ class Bugsee {
         appRunCallback(launched);
       }, (error, stackTrace) async {
         await Bugsee.logHandledException(error, stackTrace);
-      });
+      }, zoneSpecification: new ZoneSpecification(
+          print: (Zone self, ZoneDelegate parent, Zone zone, String line) {
+        parent.print(zone, line);
+        Bugsee.log(line);
+      }));
     } else {
       await launchCallback();
     }
