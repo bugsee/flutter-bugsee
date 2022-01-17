@@ -1,6 +1,6 @@
 name: bugsee_flutter
 description: Bugsee Flutter SDK
-version: 1.3.0
+version: 1.3.1
 author: Bugsee <support@bugsee.com>
 homepage: https://github.com/bugsee/flutter
 
@@ -11,10 +11,10 @@ dependencies:
   flutter:
     sdk: flutter
   stack_trace: ">=1.0.0 <2.0.0"
-  crypto: "3.0.1"
-  convert: "3.0.0"
-  uuid: "3.0.4"
-  package_info: "2.0.0"
+  crypto: "^3.0.1"
+  convert: "^3.0.1"
+  uuid: "^3.0.5"
+  package_info_plus: "^1.3.0"
 
 flutter:
   plugin:

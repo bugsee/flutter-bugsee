@@ -266,6 +266,12 @@ class AndroidLaunchOptions extends BugseeLaunchOptions {
   set serviceMode(bool value) {
     this["ServiceMode"] = value;
   }
+
+  ///
+  bool get notificationBarTrigger => this["NotificationBarTrigger"];
+  set notificationBarTrigger(bool value) {
+    this["NotificationBarTrigger"] = value;
+  }
 }
 
 BugseeLaunchOptions? getDefaultLaunchOptions() {
