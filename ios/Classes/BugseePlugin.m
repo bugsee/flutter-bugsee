@@ -391,6 +391,15 @@ NSMutableSet * activeCallbacks = nil;
     result(finalRectangles);
 }
 
+- (void) setSecureRectsInternal:(FlutterMethodCall*)call result:(FlutterResult)result {
+    // reply right away, as caller doesn't care about the result
+    result(nil);
+
+    FlutterStandardTypedData * boundsData = call.arguments[@"bounds"];
+    NSData * finalData = (boundsData && ![boundsData isEqual:[NSNull null]]) ? [boundsData data] : nil;
+    [Bugsee setInternalSecureRectangles:finalData];
+}
+
 
 // ----------------------------------------------------------------------------------
 # pragma mark -
@@ -409,23 +418,6 @@ NSMutableSet * activeCallbacks = nil;
 - (void) isViewHidden:(FlutterMethodCall*)call result:(FlutterResult)result {
     NSInteger viewId = [call.arguments[@"viewId"] integerValue];
     // TODO: get view by its ID
-    result(nil);
-}
-
-- (void) setSecureRectsInternal:(FlutterMethodCall*)call result:(FlutterResult)result {
-    // TODO: replace this with a new API which will set internal secure rectangles
-    [Bugsee removeAllSecureRects];
-
-    NSArray * boundsData = call.arguments[@"bounds"];
-    
-    for (int i = 0; i < boundsData.count; i += 4) {
-        CGFloat x = [boundsData[i] floatValue];
-        CGFloat y = [boundsData[i + 1] floatValue];
-        CGFloat w = [boundsData[i + 2] floatValue];
-        CGFloat h = [boundsData[i + 3] floatValue];
-        [Bugsee addSecureRect:CGRectMake(x, y, w, h)];
-    }
-
     result(nil);
 }
 

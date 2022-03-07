@@ -3,11 +3,16 @@ package com.bugsee;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.hardware.SensorManager;
 import android.os.Process;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.OrientationEventListener;
+import android.view.Surface;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,6 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
@@ -66,8 +72,11 @@ public class BugseePlugin implements FlutterPlugin, MethodCallHandler, ActivityA
     private MethodChannel channel;
     private WeakReference<Activity> activityRef = null;
     private WeakReference<Context> contextRef = null;
+    private OrientationTracker orientationTracker = null;
     private HashMap<String, Object> lastLaunchOptions;
     private final HashSet<String> activeCallbacks = new HashSet<>();
+    private final HashMap<Integer, Rect[]> mInternalRectsMap = new HashMap<>();
+    private long lastOrientationChangeTimeStamp = 0;
 
     public BugseePlugin() {
         // TODO: should we do this on launch instead?
@@ -128,6 +137,12 @@ public class BugseePlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         BugseePlugin plugin = new BugseePlugin();
         plugin.activityRef = new WeakReference<>(currentActivity);
         plugin.channel = channel;
+//        plugin.orientationTracker = new OrientationTracker(registrar.context(), new OrientationTrackerCallback() {
+//            @Override
+//            public void onOrientationChanged(Orientation newOrientation) {
+//                plugin.setNewOrientation(newOrientation);
+//            }
+//        });
         channel.setMethodCallHandler(plugin);
     }
 
@@ -142,6 +157,13 @@ public class BugseePlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         contextRef = new WeakReference<>(binding.getApplicationContext());
         channel = new MethodChannel(binding.getBinaryMessenger(), CHANNEL_NAME);
         channel.setMethodCallHandler(this);
+        orientationTracker = new OrientationTracker(contextRef, new OrientationTrackerCallback() {
+            @Override
+            public void onOrientationChanged(Orientation newOrientation) {
+                setNewOrientation(newOrientation);
+            }
+        });
+        orientationTracker.start();
     }
 
     @Override
@@ -153,6 +175,11 @@ public class BugseePlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         if (channel != null) {
             channel.setMethodCallHandler(null);
             channel = null;
+        }
+
+        if (orientationTracker != null) {
+            orientationTracker.stop();
+            orientationTracker = null;
         }
 
         // plugin is completely detached from FlutterEngine. Stop our all
@@ -603,20 +630,98 @@ public class BugseePlugin implements FlutterPlugin, MethodCallHandler, ActivityA
     }
 
     private void setSecureRectsInternal(MethodCall call, final Result result) {
-        // TODO: replace this with a new API which will set internal secure rectangles
-        Bugsee.removeAllSecureRectangles();
+        result.success(null);
 
-        List<Double> bounds = call.argument("bounds");
-        for (int i = 0; i < bounds.size(); i += 4) {
-            int x = getRectValue(bounds.get(i));
-            int y = getRectValue(bounds.get(i + 1));
-            int w = getRectValue(bounds.get(i + 2)) + x;
-            int h = getRectValue(bounds.get(i + 3)) + y;
-            Rect rect = new Rect(x, y, w, h);
-            Bugsee.addSecureRectangle(rect);
+        int[] boundsData = call.argument("bounds");
+        List<Rect> finalRectangles = null;
+
+        if ((boundsData != null) && (boundsData.length > 0)) {
+            finalRectangles = new ArrayList<>();
+            Set<Integer> idsToKeep = new HashSet<>();
+
+            for (int i = 0; i < boundsData.length; i += 5) {
+                // Rect is constructed as <top left, right bottom>,
+                // hence sum up X + Width, and Y + Height to get
+                // right and bottom correspondingly
+                int rectID = boundsData[i];
+                idsToKeep.add(rectID);
+
+                // we use two rectangles here to check and update the position
+                // of the areas to obscure.
+                //
+                // stateRect:
+                // Rectangle which contains the position from
+                // the previous update. We always check the new data against it
+                //
+                // actualRect:
+                // Rectangle denoting the current bounds of the
+                // target area and which is altered with diffing on each update
+                //
+
+                if (!mInternalRectsMap.containsKey(rectID)) {
+                    Rect newRect = new Rect(
+                            boundsData[i + 1],
+                            boundsData[i + 2],
+                            boundsData[i + 1] + boundsData[i + 3],
+                            boundsData[i + 2] + boundsData[i + 4]);
+                    mInternalRectsMap.put(rectID, new Rect[] {
+                            // this is state check rect
+                            new Rect(newRect),
+                            // this is actual rect
+                            newRect
+                    });
+                    finalRectangles.add(new Rect(newRect));
+                } else {
+                    Rect[] rects = mInternalRectsMap.get(rectID);
+                    if (rects != null) {
+                        Rect stateRect = rects[0];
+                        Rect actualRect = rects[1];
+
+                        int left = boundsData[i + 1];
+                        int top = boundsData[i + 2];
+                        int right = left + boundsData[i + 3];
+                        int bottom = top + boundsData[i + 4];
+
+                        int diffL = left - stateRect.left;
+                        int diffT = top - stateRect.top;
+                        int diffR = right - stateRect.right;
+                        int diffB = bottom - stateRect.bottom;
+
+                        stateRect.set(left, top, right, bottom);
+
+                        if (Math.abs(diffT) <= 1 && Math.abs(diffB) <= 1 && Math.abs(diffL) <= 1
+                                && Math.abs(diffR) <= 1) {
+                            actualRect.set(stateRect);
+                        } else {
+                            left = Math.min(left, actualRect.left);
+                            top = Math.min(top, actualRect.top);
+                            right = Math.max(right, actualRect.right);
+                            bottom = Math.max(bottom, actualRect.bottom);
+
+                            actualRect.set(left, top, right, bottom);
+                        }
+
+                        finalRectangles.add(new Rect(actualRect));
+                    }
+                }
+            }
+
+            // note that Set<> returned from keySet is connected to the
+            // underlying Map. Hence, modifications to the set are
+            // propagated to the Map itself
+            mInternalRectsMap.keySet().retainAll(idsToKeep);
+        } else {
+            mInternalRectsMap.clear();
         }
 
-        result.success(null);
+        if (finalRectangles != null) {
+            long currentTimestamp = System.currentTimeMillis();
+            if (currentTimestamp - lastOrientationChangeTimeStamp < 1500) {
+                finalRectangles.add(new Rect(0,0,99999,99999));
+            }
+        }
+
+        Bugsee.setSecureRectsInternal(finalRectangles);
     }
 
     // endregion
@@ -1019,6 +1124,116 @@ public class BugseePlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         // TODO: can we trigger signal crash from here?
         Process.sendSignal(Process.myPid(), 11);
         result.success(null);
+    }
+
+    private enum Orientation {
+        PortraitUp,
+        PortraitDown,
+        LandscapeLeft,
+        LandscapeRight,
+        Unknown
+    }
+
+    private interface OrientationTrackerCallback {
+        void onOrientationChanged(Orientation newOrientation);
+    }
+
+    private class OrientationTracker {
+        private final WeakReference<Context> contextRef;
+        private final OrientationTrackerCallback callback;
+        private OrientationEventListener platformListener;
+        private Orientation lastOrientation = null;
+
+        public OrientationTracker(WeakReference<Context> contextRef, OrientationTrackerCallback callback) {
+            this.contextRef = contextRef;
+            this.callback = callback;
+        }
+
+        public void start() {
+            if (platformListener == null && contextRef != null && contextRef.get() != null) {
+                platformListener = new OrientationEventListener(contextRef.get(), SensorManager.SENSOR_DELAY_NORMAL) {
+                    @Override
+                    public void onOrientationChanged(int angle) {
+                        Orientation newOrientation = calculateSensorOrientation(angle);
+                        if (!newOrientation.equals(lastOrientation)) {
+                            lastOrientation = newOrientation;
+                            callback.onOrientationChanged(newOrientation);
+                        }
+                    }
+                };
+                if (platformListener.canDetectOrientation()) {
+                    platformListener.enable();
+                }
+            }
+        }
+
+        public void stop() {
+            if (platformListener != null) {
+                platformListener.disable();
+                platformListener = null;
+            }
+        }
+
+        public Orientation calculateSensorOrientation(int angle) {
+            angle += 45; // tolerance
+
+            // orientation of 0 denotes "portrait" for smartphones
+            // and "landscape" for tablets (aka default mode). Hence we
+            // need to use proper offset applying an offset.
+            int defaultDeviceOrientation = getDefaultOrientation();
+            if (defaultDeviceOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+                angle += 90;
+            }
+
+            angle = angle % 360;
+            int screenOrientation = angle / 90;
+
+            switch (screenOrientation) {
+                case 0:
+                    return Orientation.PortraitUp;
+                case 1:
+                    return Orientation.LandscapeRight;
+                case 2:
+                    return Orientation.PortraitDown;
+                case 3:
+                    return Orientation.LandscapeLeft;
+                default:
+                    return Orientation.Unknown;
+            }
+        }
+
+        private int getDefaultOrientation() {
+            Context context = contextRef.get();
+
+            if (context != null) {
+                Configuration config = context.getResources().getConfiguration();
+                int rotation = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE))
+                        .getDefaultDisplay().getRotation();
+
+                if (((rotation == Surface.ROTATION_180 || rotation == Surface.ROTATION_0) &&
+                        config.orientation == Configuration.ORIENTATION_LANDSCAPE)
+                        || ((rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) &&
+                        config.orientation == Configuration.ORIENTATION_PORTRAIT)) {
+                    return Configuration.ORIENTATION_LANDSCAPE;
+                } else {
+                    return Configuration.ORIENTATION_PORTRAIT;
+                }
+            }
+
+            // if we can't get anything - just return some default
+            return Configuration.ORIENTATION_PORTRAIT;
+        }
+    }
+
+    private void setNewOrientation(Orientation newOrientation) {
+        lastOrientationChangeTimeStamp = System.currentTimeMillis();
+
+        if (mInternalRectsMap.size() > 0) {
+            // if we have secure rectangles and device is rotated,
+            // obscure the whole screen to make sure nothing is
+            // leaked
+            Bugsee.setSecureRectsInternal(Collections.singletonList(new Rect(0, 0, 99999, 99999)));
+        }
     }
 
     // endregion

@@ -102,7 +102,8 @@ class MyHomePage extends StatelessWidget {
       appBar: new AppBar(
         title: new Text('Crashy'),
       ),
-      body: new Center(
+      body: new SingleChildScrollView(
+          child: new Center(
         child: new Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
@@ -218,6 +219,12 @@ class MyHomePage extends StatelessWidget {
                 Bugsee.showReportDialog('Test summary', 'Test description');
               },
             ),
+            new TextField(
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
+                )),
             new ElevatedButton(
               child: new Text('Upload report'),
               onPressed: () {
@@ -243,9 +250,53 @@ class MyHomePage extends StatelessWidget {
                 print(rects);
               },
             ),
+            new ElevatedButton(
+              child: new Text('Dummy button'),
+              onPressed: () async {},
+            ),
+            new ElevatedButton(
+              child: new Text('Dummy button'),
+              onPressed: () async {},
+            ),
+            new ElevatedButton(
+              child: new Text('Dummy button'),
+              onPressed: () async {},
+            ),
+            new ElevatedButton(
+              child: new Text('Dummy button'),
+              onPressed: () async {},
+            ),
+            new ElevatedButton(
+              child: new Text('Dummy button'),
+              onPressed: () async {},
+            ),
+            new ElevatedButton(
+              child: new Text('Dummy button'),
+              onPressed: () async {},
+            ),
+            new ElevatedButton(
+              child: new Text('Dummy button'),
+              onPressed: () async {},
+            ),
+            new ElevatedButton(
+              child: new Text('Dummy button'),
+              onPressed: () async {},
+            ),
+            new ElevatedButton(
+              child: new Text('Dummy button'),
+              onPressed: () async {},
+            ),
+            new ElevatedButton(
+              child: new Text('Dummy button'),
+              onPressed: () async {},
+            ),
+            new ElevatedButton(
+              child: new Text('Dummy button'),
+              onPressed: () async {},
+            ),
           ],
         ),
-      ),
+      )),
     );
   }
 }

@@ -54,6 +54,7 @@ class Bugsee {
       _exceptionHandler = BugseeExceptionHandler(_channel!);
       _callbacks = BugseeCallbacks(_channel!);
       _viewManager = BugseeViewManager(_channel!);
+      _viewManager!.initialize(_callbacks!);
     }
   }
 
