@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'bugsee_flutter'
-  s.version          = '2.0.0'
+  s.version          = '2.1.0'
   s.summary          = 'Bugsee plugin for Flutter'
   s.description      = <<-DESC
 Bugsee Flutter SDK.
@@ -12,7 +12,7 @@ Bugsee Flutter SDK.
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
-  s.dependency 'Bugsee', '2.1.0'
+  s.dependency 'Bugsee', '2.1.4'
   s.static_framework = true
 
   s.pod_target_xcconfig = { 'OTHER_LDFLAGS' => '"$(inherited)" "-framework" "Flutter" "-framework" "Bugsee"' }

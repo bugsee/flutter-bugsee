@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 
 import 'enums.dart';
-import 'types-internal.dart';
+import 'types_internal.dart';
 import 'types.dart';
 
 class BugseeCallbacks {
@@ -14,6 +14,7 @@ class BugseeCallbacks {
   BugseeLifecycleCallback? _bugseeLifecycleCallback;
   BugseeAttachmentsCallback? _bugseeAttachmentsCallback;
   BugseeNewFeedbackMessagesCallback? _bugseeNewFeedbackMessagesCallback;
+  BugseeAdditionalDataCaptureCallback? _bugseeAdditionalDataCaptureCallback;
 
   BugseeCallbacks(MethodChannel channel) : _channel = channel {
     _channel.setMethodCallHandler(_onMethodCall);
@@ -43,6 +44,11 @@ class BugseeCallbacks {
       BugseeNewFeedbackMessagesCallback? callback) {
     _bugseeNewFeedbackMessagesCallback = callback;
     _setCallbackState("onNewFeedbackMessages", callback != null);
+  }
+
+  void setAdditionalDataCaptureCallback(
+      BugseeAdditionalDataCaptureCallback? callback) {
+    _bugseeAdditionalDataCaptureCallback = callback;
   }
 
   Future<dynamic> triggerNetworkFilterCallback(dynamic originalEvent) async {
@@ -83,6 +89,9 @@ class BugseeCallbacks {
 
       case "onNewFeedbackMessages":
         return _onNewFeedbackMessagesAvailableCall(call);
+
+      case "onCaptureAdditionalData":
+        return _onCaptureAdditionalData(call);
 
       default:
         return Future.value(null);
@@ -144,5 +153,14 @@ class BugseeCallbacks {
   Future<void> _setCallbackState(String callbackName, bool state) async {
     await _channel.invokeMethod('setCallbackState',
         <String, dynamic>{'callbackName': callbackName, 'state': state});
+  }
+
+  Future<dynamic> _onCaptureAdditionalData(MethodCall call) async {
+    if (_bugseeAdditionalDataCaptureCallback != null) {
+      return Future.value(
+          _bugseeAdditionalDataCaptureCallback!(call.arguments[0]));
+    }
+
+    return Future.value(null);
   }
 }

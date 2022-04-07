@@ -55,6 +55,14 @@ class Bugsee {
       _callbacks = BugseeCallbacks(_channel!);
       _viewManager = BugseeViewManager(_channel!);
       _viewManager!.initialize(_callbacks!);
+
+      _callbacks!.setAdditionalDataCaptureCallback((kind) {
+        if (kind == "vh") {
+          return _viewManager?.dumpViewHierarchy();
+        }
+
+        return null;
+      });
     }
   }
 

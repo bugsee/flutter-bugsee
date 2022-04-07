@@ -1,3 +1,7 @@
+import 'dart:math';
+
+import 'package:flutter/material.dart';
+
 import 'types.dart';
 
 class BugseeNetworkEventImpl extends BugseeNetworkEvent {
@@ -38,5 +42,40 @@ class BugseeNetworkEventImpl extends BugseeNetworkEvent {
     originalEvent['headers'] = e.headers;
 
     return originalEvent;
+  }
+}
+
+typedef BugseeAdditionalDataCaptureCallback = String? Function(String kind);
+
+class ViewHierarchyItem {
+  String id = "";
+  Rectangle bounds = Rectangle(0, 0, 0, 0);
+  String className = "";
+  String? baseClassName;
+  Map<String, dynamic>? options;
+  List<ViewHierarchyItem>? subitems;
+
+  ViewHierarchyItem(String id, Rectangle bounds, String className) {
+    this.id = id;
+    this.bounds = bounds;
+    this.className = className;
+  }
+
+  Map<String, dynamic> toMap() {
+    Map<String, dynamic> map = {
+      "id": id,
+      "bounds": [bounds.left, bounds.top, bounds.width, bounds.height],
+      "class_name": className
+    };
+    if (baseClassName != null) {
+      map["base_class_name"] = baseClassName;
+    }
+    if (options != null) {
+      map["options"] = options;
+    }
+    if (subitems != null) {
+      map["subitems"] = subitems!.map((item) => item.toMap()).toList();
+    }
+    return map;
   }
 }

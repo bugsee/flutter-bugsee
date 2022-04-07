@@ -1,5 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:math';
 
+import 'package:bugsee_flutter/src/types_internal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:typed_data';
@@ -17,6 +20,17 @@ class BugseeViewManager {
   double _devicePixelRatio = 1.0;
   int lastUpdateTimestamp = 0;
   // Stopwatch _stopwatch = Stopwatch();
+
+  void _updateDevicePixelRatio() {
+    if (WidgetsBinding.instance != null) {
+      if (Platform.isAndroid) {
+        this._devicePixelRatio =
+            WidgetsBinding.instance!.window.devicePixelRatio;
+      } else if (Platform.isIOS) {
+        this._devicePixelRatio = 1;
+      }
+    }
+  }
 
   bool _addElementBounds(Element element, List<int> boundsData) {
     Size? widgetSize = element.size;
@@ -94,14 +108,9 @@ class BugseeViewManager {
     // _stopwatch.reset();
     // _stopwatch.start();
 
-    if (WidgetsBinding.instance != null) {
-      if (Platform.isAndroid) {
-        this._devicePixelRatio =
-            WidgetsBinding.instance!.window.devicePixelRatio;
-      } else if (Platform.isIOS) {
-        this._devicePixelRatio = 1;
-      }
+    this._updateDevicePixelRatio();
 
+    if (WidgetsBinding.instance != null) {
       List<int> boundsData = [];
 
       // start widgets tree traversal
@@ -155,8 +164,77 @@ class BugseeViewManager {
     WidgetsBinding.instance?.addPostFrameCallback(onAfterFrame);
   }
 
-  void dumpViewHierarchy() {
-    // TBD
+  void _createOptionsForElement(Element element, ViewHierarchyItem item) {
+    // Fill element options here
+    item.options = {
+      "widget": element.widget.toStringShort(),
+      "dirty": element.dirty,
+      "debugIsDefunct": element.debugIsDefunct
+    };
+
+    // try the following for more options:
+    // element.describeElement(name).toJsonMap(delegate)
+  }
+
+  ViewHierarchyItem? _createViewHierarchyItemFromElement(Element? element) {
+    if (element == null) {
+      return null;
+    }
+
+    Rectangle? bounds;
+    try {
+      RenderBox? renderBox = element.renderObject as RenderBox?;
+      if (renderBox != null) {
+        Size elementSize = renderBox.size;
+        Offset elementOffset = renderBox.localToGlobal(Offset.zero);
+        var x = (elementOffset.dx * _devicePixelRatio).round();
+        var y = (elementOffset.dy * _devicePixelRatio).round();
+        var width = (elementSize.width * _devicePixelRatio).round();
+        var height = (elementSize.height * _devicePixelRatio).round();
+        bounds = Rectangle(x, y, width, height);
+      }
+    } catch (e) {
+      // TODO: check whether it's safe to ignore the failure here
+    }
+
+    if (bounds == null) {
+      bounds = Rectangle(0, 0, 0, 0);
+    }
+
+    ViewHierarchyItem item = ViewHierarchyItem(
+        element.hashCode.toString(), bounds, element.toStringShort());
+
+    _createOptionsForElement(element, item);
+
+    element.visitChildren((element) {
+      if (item.subitems == null) {
+        item.subitems = [];
+      }
+
+      var subitem = _createViewHierarchyItemFromElement(element);
+      if (subitem != null) {
+        item.subitems!.add(subitem);
+      }
+    });
+
+    return item;
+  }
+
+  String? dumpViewHierarchy() {
+    this._updateDevicePixelRatio();
+
+    ViewHierarchyItem? rootItem = _createViewHierarchyItemFromElement(
+        WidgetsBinding.instance?.renderViewElement);
+
+    if (rootItem != null) {
+      try {
+        return jsonEncode(rootItem.toMap());
+      } catch (e) {
+        // Failed to convert to JSON
+      }
+    }
+
+    return null;
   }
 
   void startViewTracking() {

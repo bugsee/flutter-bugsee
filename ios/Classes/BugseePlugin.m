@@ -609,6 +609,18 @@ NSMutableSet * activeCallbacks = nil;
     [[self channel] invokeMethod:@"onNewFeedbackMessages" arguments:@[messages]];
 }
 
+- (void) bugseeCaptureAdditionalData:(NSString * _Nonnull)kind captureBlock:(BugseeAdditionalDataCaptureBlock _Nullable)captureBlock {
+    [[self channel] invokeMethod:@"onCaptureAdditionalData"
+                       arguments:@[kind]
+                          result:^(id result) {
+                              if (result && ![NSNull isEqual:result] && [result isKindOfClass:[NSString class]]) {
+                                  captureBlock([result dataUsingEncoding:NSUTF8StringEncoding]);
+                              } else {
+                                  captureBlock(nil);
+                              }
+    }];
+}
+
 - (void) registerNetworkEvent:(FlutterMethodCall*)call result:(FlutterResult)result {
     NSData * bodyData = nil;
     NSDictionary * errorData = call.arguments[@"error"] ? @{ @"errorMessage": call.arguments[@"error"] } : nil;

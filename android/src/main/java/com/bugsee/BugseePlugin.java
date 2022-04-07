@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
@@ -45,7 +46,9 @@ import com.bugsee.library.BugseeInternalAdapter;
 import com.bugsee.library.attachment.CustomAttachment;
 import com.bugsee.library.attachment.Report;
 import com.bugsee.library.attachment.ReportAttachmentsProvider;
+import com.bugsee.library.data.AdditionalDataCaptureCallback;
 import com.bugsee.library.data.IssueSeverity;
+import com.bugsee.library.data.AdditionalDataCapture;
 import com.bugsee.library.events.BugseeLogLevel;
 import com.bugsee.library.exchange.ExchangeNetworkEvent;
 import com.bugsee.library.feedback.OnNewFeedbackListener;
@@ -1069,6 +1072,34 @@ public class BugseePlugin implements FlutterPlugin, MethodCallHandler, ActivityA
                             }
                         }
                     });
+                }
+            }
+        });
+
+        Bugsee.setAdditionalDataCapture(new AdditionalDataCapture() {
+            @Override
+            public void captureAdditionalData(@NonNull String kind, @NonNull final AdditionalDataCaptureCallback additionalDataCaptureCallback) {
+                if (channel != null) {
+                    channel.invokeMethod("onCaptureAdditionalData",
+                            Collections.singletonList(kind), new Result() {
+                                @Override
+                                public void success(@Nullable Object result) {
+                                    String finalResult = (result instanceof String) ? (String)result : null;
+                                    additionalDataCaptureCallback.onAdditionalDataCaptured(finalResult);
+                                }
+
+                                @Override
+                                public void error(String errorCode, @Nullable String errorMessage, @Nullable Object errorDetails) {
+                                    additionalDataCaptureCallback.onAdditionalDataCaptured(null);
+                                }
+
+                                @Override
+                                public void notImplemented() {
+                                    additionalDataCaptureCallback.onAdditionalDataCaptured(null);
+                                }
+                            });
+                } else {
+                    additionalDataCaptureCallback.onAdditionalDataCaptured(null);
                 }
             }
         });
