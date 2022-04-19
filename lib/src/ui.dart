@@ -21,6 +21,14 @@ class BugseeViewManager {
   int lastUpdateTimestamp = 0;
   // Stopwatch _stopwatch = Stopwatch();
 
+  List<double> _rectToList(Rect? bounds) {
+    if (bounds != null) {
+      return [bounds.left, bounds.top, bounds.width, bounds.height];
+    }
+
+    return [0, 0, 0, 0];
+  }
+
   void _updateDevicePixelRatio() {
     if (WidgetsBinding.instance != null) {
       if (Platform.isAndroid) {
@@ -167,10 +175,21 @@ class BugseeViewManager {
   void _createOptionsForElement(Element element, ViewHierarchyItem item) {
     // Fill element options here
     item.options = {
-      "widget": element.widget.toStringShort(),
+      "hashCode": element.hashCode.toString(),
+      "element": element.runtimeType.toString(),
       "dirty": element.dirty,
-      "debugIsDefunct": element.debugIsDefunct
+      "debugIsDefunct": element.debugIsDefunct,
+      "key": element.widget.key?.toString() ?? ""
     };
+
+    RenderObject? ro = element.renderObject;
+    if (ro != null) {
+      item.options!['semantic_bounds'] = _rectToList(ro.semanticBounds);
+      item.options!['paint_bounds'] = _rectToList(ro.paintBounds);
+      item.options!['need_compositing'] = ro.needsCompositing;
+      item.options!['is_repaint_boundary'] = ro.isRepaintBoundary;
+      item.options!['attached'] = ro.attached;
+    }
 
     // try the following for more options:
     // element.describeElement(name).toJsonMap(delegate)
@@ -201,8 +220,10 @@ class BugseeViewManager {
       bounds = Rectangle(0, 0, 0, 0);
     }
 
-    ViewHierarchyItem item = ViewHierarchyItem(
-        element.hashCode.toString(), bounds, element.toStringShort());
+    var className = element.widget.runtimeType.toString();
+
+    ViewHierarchyItem item =
+        ViewHierarchyItem(element.hashCode.toString(), bounds, className);
 
     _createOptionsForElement(element, item);
 

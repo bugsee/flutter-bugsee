@@ -1,6 +1,6 @@
 import 'package:package_info_plus/package_info_plus.dart';
 
-const String BUGSEE_VERSION = '2.1.1';
+const String BUGSEE_VERSION = '2.1.2';
 
 String _applicationVersion = '';
 
