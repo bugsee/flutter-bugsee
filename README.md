@@ -1,5 +1,11 @@
 # Bugsee for flutter
 
+<hr />
+
+**Bugsee Flutter SDK is now published as a [pub.dev](https://pub.dev) package. Refer to https://pub.dev/packages/bugsee_flutter to find out more.**
+
+<hr />
+
 Bugsee is a mobile SDK that adds crucial information to your bug and crash reports. Bugsee reports include video of user actions, network traffic, console logs and many other important traces from your app. Now you know what exactly led to the unexpected behavior.
 
 Sign up for a service at https://www.bugsee.com.
